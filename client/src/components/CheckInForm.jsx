@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api } from '../api';
 import MoodRatingInput from './MoodRatingInput';
-import { Moon, MessageSquare, Tag, Calendar, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Moon, MessageSquare, Tag, Calendar, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const checkInSchema = z.object({
   mood: z.number({ required_error: 'Please pick your mood' }).int().min(1).max(5),
@@ -81,8 +81,14 @@ export default function CheckInForm({ onEntryCreated, todayDate }) {
 
     try {
       const created = await api.createEntry(formData);
-      setSuccessMsg('Your check-in has been recorded successfully!');
-      reset();
+      setSuccessMsg('Your check-in has been logged successfully!');
+      reset({
+        mood: 4,
+        sleep_hours: 7.5,
+        reflection: '',
+        feelings: [],
+        entry_date: todayDate || new Date().toISOString().split('T')[0],
+      });
       if (onEntryCreated) {
         onEntryCreated(created);
       }
@@ -98,35 +104,26 @@ export default function CheckInForm({ onEntryCreated, todayDate }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
-      <div className="flex items-center justify-between pb-6 border-b border-slate-100">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Daily Mood Check-in</h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Reflect on your mood, rest, and emotions to build your personal time-series data.
-          </p>
-        </div>
-      </div>
-
+    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-soft border border-[#EFEAE2]">
       {apiError && (
-        <div className="mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-start gap-3 text-sm">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" />
+        <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 text-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600 mt-0.5" />
           <div>
-            <p className="font-semibold">Unable to save check-in</p>
+            <p className="font-bold">Unable to save check-in</p>
             <p className="text-xs sm:text-sm mt-0.5">{apiError}</p>
           </div>
         </div>
       )}
 
       {successMsg && (
-        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 text-sm">
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 text-sm">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600" />
-          <p className="font-medium">{successMsg}</p>
+          <p className="font-bold">{successMsg}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
-        {/* Mood 1-5 selector */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+        {/* Mood Interactive Selector matching Image 1 */}
         <Controller
           name="mood"
           control={control}
@@ -139,45 +136,11 @@ export default function CheckInForm({ onEntryCreated, todayDate }) {
           )}
         />
 
-        {/* Sleep Hours */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-              <Moon className="w-4 h-4 text-indigo-500" />
-              Hours of Sleep <span className="text-rose-500">*</span>
-            </label>
-            <span className="text-sm font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-100">
-              {Number(sleepValue || 0).toFixed(1)} hrs
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <input
-              type="range"
-              min="0"
-              max="16"
-              step="0.5"
-              {...register('sleep_hours', { valueAsNumber: true })}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-            />
-            <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-              <span>0h</span>
-              <span>4h</span>
-              <span>8h (Ideal)</span>
-              <span>12h</span>
-              <span>16h+</span>
-            </div>
-          </div>
-          {errors.sleep_hours && (
-            <p className="mt-1 text-xs text-rose-600 font-medium">{errors.sleep_hours.message}</p>
-          )}
-        </div>
-
         {/* Feelings Multi-select */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
-            <Tag className="w-4 h-4 text-indigo-500" />
-            How would you describe your feelings? <span className="text-rose-500">*</span>
+        <div className="pt-4 border-t border-[#F4EFE8]">
+          <label className="block text-xs font-bold text-espresso-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+            <Tag className="w-4 h-4 text-terracotta" />
+            Emotions & Feelings <span className="text-rose-500">*</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {feelingsList.map((feeling) => {
@@ -187,10 +150,10 @@ export default function CheckInForm({ onEntryCreated, todayDate }) {
                   type="button"
                   key={feeling.id}
                   onClick={() => toggleFeeling(feeling.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                      ? 'bg-terracotta text-white shadow-xs'
+                      : 'bg-cream-100 text-espresso-700 hover:bg-cream-200 border border-[#EAE2D7]'
                   }`}
                 >
                   {active ? '✓ ' : '+ '}
@@ -200,61 +163,90 @@ export default function CheckInForm({ onEntryCreated, todayDate }) {
             })}
           </div>
           {errors.feelings && (
-            <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.feelings.message}</p>
+            <p className="mt-1.5 text-xs text-rose-600 font-semibold">{errors.feelings.message}</p>
+          )}
+        </div>
+
+        {/* Sleep Hours Slider */}
+        <div className="pt-4 border-t border-[#F4EFE8]">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold text-espresso-700 uppercase tracking-wider flex items-center gap-1.5">
+              <Moon className="w-4 h-4 text-terracotta" />
+              Hours of Sleep <span className="text-rose-500">*</span>
+            </label>
+            <span className="text-xs font-extrabold text-espresso-800 bg-cream-100 px-3 py-1 rounded-full border border-[#EAE2D7]">
+              {Number(sleepValue || 0).toFixed(1)} hrs
+            </span>
+          </div>
+
+          <div className="space-y-1.5">
+            <input
+              type="range"
+              min="0"
+              max="16"
+              step="0.5"
+              {...register('sleep_hours', { valueAsNumber: true })}
+              className="w-full h-2.5 bg-cream-200 rounded-lg appearance-none cursor-pointer accent-terracotta"
+            />
+            <div className="flex justify-between text-[11px] font-semibold text-espresso-500">
+              <span>0h</span>
+              <span>4h</span>
+              <span>8h (Ideal)</span>
+              <span>12h</span>
+              <span>16h+</span>
+            </div>
+          </div>
+          {errors.sleep_hours && (
+            <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.sleep_hours.message}</p>
           )}
         </div>
 
         {/* Reflection Textarea */}
-        <div>
+        <div className="pt-4 border-t border-[#F4EFE8]">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-              <MessageSquare className="w-4 h-4 text-indigo-500" />
+            <label className="text-xs font-bold text-espresso-700 uppercase tracking-wider flex items-center gap-1.5">
+              <MessageSquare className="w-4 h-4 text-terracotta" />
               Daily Reflection <span className="text-rose-500">*</span>
             </label>
-            <span
-              className={`text-xs font-mono ${
-                reflectionText.length > 450 ? 'text-amber-600 font-bold' : 'text-slate-400'
-              }`}
-            >
+            <span className="text-xs font-semibold text-espresso-500">
               {reflectionText.length}/500 chars
             </span>
           </div>
           <textarea
             rows={3}
-            placeholder="What went well today? What challenges did you face? Any thoughts or feelings to note?"
+            placeholder="What shaped your day? Notice any thoughts, challenges, or moments of peace..."
             {...register('reflection')}
-            className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all ${
-              errors.reflection ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200 focus:border-indigo-600'
+            className={`w-full px-4 py-3 rounded-2xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-all ${
+              errors.reflection
+                ? 'border-rose-400 bg-rose-50/20'
+                : 'border-[#EAE2D7] bg-cream-50 focus:border-terracotta'
             }`}
           />
           {errors.reflection && (
-            <p className="mt-1 text-xs text-rose-600 font-medium">{errors.reflection.message}</p>
+            <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.reflection.message}</p>
           )}
         </div>
 
-        {/* Date Selector (optional override for missed days) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <span>Check-in Date:</span>
+        {/* Date override & Terracotta Continue Button (Matching Image 1) */}
+        <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-espresso-600">
+            <Calendar className="w-4 h-4 text-terracotta" />
+            <span>Date:</span>
             <input
               type="date"
               {...register('entry_date')}
-              className="px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs font-medium focus:outline-none focus:border-indigo-500"
+              className="px-2.5 py-1 rounded-xl border border-[#EAE2D7] bg-cream-50 text-espresso-800 text-xs font-bold focus:outline-none focus:border-terracotta"
             />
           </div>
 
+          {/* Wide Rounded Terracotta Button from Image 1 */}
           <button
             type="submit"
             disabled={submitting}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm shadow-sm shadow-indigo-200 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full sm:w-auto min-w-[200px] py-3.5 px-8 rounded-full bg-terracotta hover:bg-terracotta-hover active:scale-98 text-white font-display font-bold text-sm shadow-md shadow-terracotta/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {submitting ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-            <span>Log Check-in</span>
+            <span>{submitting ? 'Saving...' : 'Continue'}</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </form>

@@ -1,129 +1,186 @@
 import React, { useState } from 'react';
-import { MOOD_LEVELS } from './MoodRatingInput';
-import { Calendar, HelpCircle } from 'lucide-react';
+import MoodFace, { MOOD_DEFINITIONS } from './MoodFace';
+import { Plus, ChevronLeft, ChevronRight, Moon } from 'lucide-react';
 
-export default function CalendarHeatmap({ entries, days = 30 }) {
-  const [hoveredDay, setHoveredDay] = useState(null);
+export default function CalendarHeatmap({ entries, onLogClick, onSelectDay }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDateStr, setSelectedDateStr] = useState(
+    new Date().toISOString().split('T')[0]
+  );
 
-  // Generate an array of dates for the last N days
-  const today = new Date();
-  const dateMap = new Map();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
 
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Sunday
+
+  // Map entries by date YYYY-MM-DD
+  const entryMap = new Map();
   (entries || []).forEach((e) => {
-    dateMap.set(e.entry_date, e);
+    entryMap.set(e.entry_date, e);
   });
 
-  const cells = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const entry = dateMap.get(dateStr);
-    cells.push({
-      dateStr,
-      dayNumber: d.getDate(),
-      dayOfWeek: d.toLocaleDateString('en-US', { weekday: 'short' }),
-      entry,
-    });
+  // Calculate count of logged moods in this month
+  let loggedThisMonth = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (entryMap.has(dStr)) {
+      loggedThisMonth++;
+    }
   }
 
-  const getMoodColor = (mood) => {
-    if (!mood) return 'bg-slate-100 border-dashed border-slate-200 text-slate-400';
-    switch (mood) {
-      case 1:
-        return 'bg-red-500 text-white';
-      case 2:
-        return 'bg-orange-400 text-white';
-      case 3:
-        return 'bg-amber-400 text-slate-900';
-      case 4:
-        return 'bg-emerald-500 text-white';
-      case 5:
-        return 'bg-blue-500 text-white';
-      default:
-        return 'bg-slate-200 text-slate-700';
-    }
+  const prevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
   };
 
+  const nextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+  // Calendar cells
+  const blanks = Array.from({ length: firstDayOfWeek });
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const selectedEntry = entryMap.get(selectedDateStr);
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+    <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-soft border border-[#EFEAE2]">
+      {/* Top Header matching Image 3 */}
+      <div className="flex items-start justify-between pb-5 border-b border-[#F4EFE8]">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-600" />
-            Calendar Heatmap & Daily Gaps
-          </h3>
-          <p className="text-xs text-slate-500">
-            Visualizing consistent check-in habits. Unlogged days appear as empty dashed squares.
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-3xl sm:text-4xl font-extrabold text-espresso-800 tracking-tight">
+              {loggedThisMonth}/{daysInMonth}
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm font-medium text-espresso-500 mt-0.5">
+            Moods logged in {monthName}
           </p>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-          <span>Gap</span>
-          <div className="w-3.5 h-3.5 rounded bg-slate-100 border border-dashed border-slate-300"></div>
-          <span className="mx-1">→</span>
-          <div className="w-3.5 h-3.5 rounded bg-red-500"></div>
-          <div className="w-3.5 h-3.5 rounded bg-orange-400"></div>
-          <div className="w-3.5 h-3.5 rounded bg-amber-400"></div>
-          <div className="w-3.5 h-3.5 rounded bg-emerald-500"></div>
-          <div className="w-3.5 h-3.5 rounded bg-blue-500"></div>
-          <span>Great</span>
+        <div className="flex items-center gap-2">
+          {/* Month selector navigation */}
+          <div className="flex items-center bg-cream-100 rounded-full p-1 border border-[#EAE2D7]">
+            <button
+              onClick={prevMonth}
+              className="p-1.5 rounded-full hover:bg-white text-espresso-700 transition-colors"
+              title="Previous Month"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-xs font-bold text-espresso-800 px-2 min-w-[70px] text-center">
+              {currentDate.toLocaleString('default', { month: 'short' })} '{String(year).slice(2)}
+            </span>
+            <button
+              onClick={nextMonth}
+              className="p-1.5 rounded-full hover:bg-white text-espresso-700 transition-colors"
+              title="Next Month"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Brown Circular Plus Button from Image 3 */}
+          <button
+            onClick={onLogClick}
+            title="Log Mood"
+            className="w-11 h-11 rounded-full bg-terracotta hover:bg-terracotta-hover text-white flex items-center justify-center shadow-md shadow-terracotta/20 transition-transform hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-5 h-5 stroke-[2.5]" />
+          </button>
         </div>
       </div>
 
-      {/* Grid of days */}
-      <div className="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-15 gap-2 mt-5">
-        {cells.map(({ dateStr, dayNumber, entry }) => {
-          const hasEntry = !!entry;
-          const mood = entry?.mood;
-          const config = hasEntry ? MOOD_LEVELS.find((m) => m.level === mood) : null;
+      {/* Weekday labels */}
+      <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-espresso-700 pt-5 pb-2">
+        {dayHeaders.map((dh) => (
+          <div key={dh} className="py-1">
+            {dh}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-2 text-center">
+        {/* Leading empty blank slots */}
+        {blanks.map((_, i) => (
+          <div key={`blank-${i}`} className="h-14 sm:h-16 flex items-center justify-center opacity-25">
+            <div className="w-9 h-9 rounded-full border border-dashed border-[#DDD2C3]" />
+          </div>
+        ))}
+
+        {/* Days of current month */}
+        {monthDays.map((day) => {
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const entry = entryMap.get(dateStr);
+          const isSelected = selectedDateStr === dateStr;
 
           return (
             <div
               key={dateStr}
-              onMouseEnter={() => setHoveredDay({ dateStr, entry, config })}
-              onMouseLeave={() => setHoveredDay(null)}
-              className={`relative h-11 rounded-xl border flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-110 shadow-xs ${getMoodColor(
-                mood
-              )}`}
+              onClick={() => {
+                setSelectedDateStr(dateStr);
+                if (onSelectDay) onSelectDay(entry, dateStr);
+              }}
+              className={`h-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${
+                isSelected
+                  ? 'border-2 border-terracotta bg-terracotta/5 shadow-xs scale-105'
+                  : 'hover:bg-cream-100'
+              }`}
             >
-              <span className="text-[10px] font-bold opacity-80">{dayNumber}</span>
-              {hasEntry ? (
-                <span className="text-xs select-none">{config?.emoji}</span>
+              <span
+                className={`text-[11px] font-bold ${
+                  isSelected ? 'text-terracotta font-extrabold' : 'text-espresso-700'
+                }`}
+              >
+                {day}
+              </span>
+
+              {entry ? (
+                <div className="mt-0.5">
+                  <MoodFace level={entry.mood} size={24} />
+                </div>
               ) : (
-                <span className="text-[10px] opacity-40 font-mono">—</span>
+                <div className="mt-1 w-6 h-6 rounded-full border border-dashed border-[#D5C9B8] bg-white/50" />
               )}
             </div>
           );
         })}
       </div>
 
-      {/* Hover Detail Tooltip banner */}
-      <div className="mt-4 pt-3 border-t border-slate-100 min-h-[36px] flex items-center justify-between text-xs text-slate-600">
-        {hoveredDay ? (
+      {/* Selected Day Details Card */}
+      {selectedEntry ? (
+        <div className="mt-6 p-4 rounded-2xl bg-cream-100 border border-[#EAE2D7] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-slate-900">{hoveredDay.dateStr}:</span>
-            {hoveredDay.entry ? (
-              <span className="flex items-center gap-2">
-                <span>{hoveredDay.config?.emoji}</span>
-                <span className="font-semibold">{hoveredDay.config?.label} (Mood {hoveredDay.entry.mood}/5)</span>
-                <span>•</span>
-                <span>{hoveredDay.entry.sleep_hours} hrs sleep</span>
-                {hoveredDay.entry.reflection && (
-                  <span className="italic text-slate-500 truncate max-w-sm">
-                    "{hoveredDay.entry.reflection}"
-                  </span>
-                )}
-              </span>
-            ) : (
-              <span className="text-amber-600 font-medium italic">No check-in recorded for this day (Gap)</span>
-            )}
+            <MoodFace level={selectedEntry.mood} size={40} />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold text-espresso-800 text-sm">
+                  {MOOD_DEFINITIONS[selectedEntry.mood]?.phrase}
+                </span>
+                <span className="text-[11px] font-mono text-espresso-500">
+                  ({selectedEntry.entry_date})
+                </span>
+              </div>
+              <p className="text-xs text-espresso-600 italic mt-0.5 max-w-lg">
+                "{selectedEntry.reflection}"
+              </p>
+            </div>
           </div>
-        ) : (
-          <span className="text-slate-400 italic">Hover over any day square to see details</span>
-        )}
-      </div>
+
+          <div className="flex items-center gap-3 text-xs font-semibold text-espresso-700 bg-white px-3 py-1.5 rounded-xl border border-[#EAE2D7] self-start sm:self-auto">
+            <Moon className="w-3.5 h-3.5 text-terracotta" />
+            <span>{selectedEntry.sleep_hours}h sleep</span>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-5 text-center text-xs text-espresso-500 italic py-2">
+          Click any date in the calendar to inspect that day's reflection and details.
+        </div>
+      )}
     </div>
   );
 }

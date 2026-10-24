@@ -59,10 +59,8 @@ export default function SettingsModal({ isOpen, onClose }) {
     setSavedSuccess(false);
 
     try {
-      // 1. Update user profile
       await updateUser({ name, avatar_url: avatarUrl, timezone });
 
-      // 2. Update reminders
       await api.updateReminders({
         time_of_day: reminderTime,
         enabled: reminderEnabled,
@@ -81,20 +79,24 @@ export default function SettingsModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 relative animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso-900/40 backdrop-blur-xs">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-xl border border-[#EAE2D7] relative animate-in fade-in zoom-in-95">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+          className="absolute top-5 right-5 text-espresso-500 hover:text-espresso-800 p-1 rounded-full hover:bg-cream-100 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Account & Reminders</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Customize your profile and schedule notification preferences.</p>
+        <h3 className="font-display text-2xl font-bold text-espresso-800 tracking-tight">
+          Account & Daily Reminders
+        </h3>
+        <p className="text-xs text-espresso-500 mt-1">
+          Personalize your profile and daily notification schedule.
+        </p>
 
         {savedSuccess && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <div className="mt-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             Preferences saved successfully!
           </div>
@@ -103,33 +105,33 @@ export default function SettingsModal({ isOpen, onClose }) {
         <form onSubmit={handleSave} className="mt-5 space-y-5">
           {/* Name */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-espresso-700 uppercase tracking-wider mb-1">
               Display Name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-600"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#EAE2D7] bg-cream-50 text-sm font-medium focus:outline-none focus:border-terracotta"
               required
             />
           </div>
 
-          {/* Avatar preset selection */}
+          {/* Avatar presets */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Select Preset Avatar
+            <label className="block text-xs font-bold text-espresso-700 uppercase tracking-wider mb-2">
+              Preset Avatars
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               {PRESET_AVATARS.map((avatar, idx) => (
                 <button
                   type="button"
                   key={idx}
                   onClick={() => setAvatarUrl(avatar)}
-                  className={`w-11 h-11 rounded-full p-1 border-2 transition-all ${
+                  className={`w-10 h-10 rounded-full p-0.5 border-2 transition-all ${
                     avatarUrl === avatar
-                      ? 'border-indigo-600 scale-110 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300'
+                      ? 'border-terracotta scale-110 shadow-xs'
+                      : 'border-[#DDD2C3] hover:border-terracotta/50'
                   }`}
                 >
                   <img src={avatar} alt="Preset" className="w-full h-full rounded-full object-cover" />
@@ -140,13 +142,13 @@ export default function SettingsModal({ isOpen, onClose }) {
 
           {/* Timezone */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Timezone (Used to calculate your local "today")
+            <label className="block text-xs font-bold text-espresso-700 uppercase tracking-wider mb-1">
+              Timezone (Computes your local calendar "today")
             </label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-600"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE2D7] bg-cream-50 text-xs font-semibold focus:outline-none focus:border-terracotta"
             >
               <option value="UTC">UTC (Coordinated Universal Time)</option>
               <option value="America/New_York">America/New_York (EST/EDT)</option>
@@ -161,12 +163,12 @@ export default function SettingsModal({ isOpen, onClose }) {
           </div>
 
           {/* Reminders section */}
-          <div className="pt-4 border-t border-slate-100">
+          <div className="pt-4 border-t border-[#F4EFE8]">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-indigo-600" />
-                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Daily Check-in Reminder
+                <Bell className="w-4 h-4 text-terracotta" />
+                <span className="text-xs font-bold text-espresso-800 uppercase tracking-wider">
+                  Scheduled Check-in Reminder
                 </span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -176,31 +178,31 @@ export default function SettingsModal({ isOpen, onClose }) {
                   onChange={(e) => setReminderEnabled(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                <div className="w-9 h-5 bg-cream-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-terracotta"></div>
               </label>
             </div>
 
             {reminderEnabled && (
               <div className="grid grid-cols-2 gap-3 mt-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                  <label className="block text-[11px] font-bold text-espresso-500 mb-1">
                     Notification Time
                   </label>
                   <input
                     type="time"
                     value={reminderTime}
                     onChange={(e) => setReminderTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                    className="w-full px-3 py-2 rounded-xl border border-[#EAE2D7] bg-cream-50 text-xs font-bold focus:outline-none focus:border-terracotta"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                  <label className="block text-[11px] font-bold text-espresso-500 mb-1">
                     Channel
                   </label>
                   <select
                     value={reminderChannel}
                     onChange={(e) => setReminderChannel(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                    className="w-full px-3 py-2 rounded-xl border border-[#EAE2D7] bg-cream-50 text-xs font-bold focus:outline-none focus:border-terracotta"
                   >
                     <option value="email">Email</option>
                     <option value="push">Web Push</option>
@@ -215,17 +217,17 @@ export default function SettingsModal({ isOpen, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold text-espresso-600 hover:text-espresso-800 rounded-full"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-60"
+              className="px-6 py-2.5 text-xs font-bold text-white bg-terracotta hover:bg-terracotta-hover rounded-full shadow-md shadow-terracotta/20 transition-all flex items-center gap-1.5 disabled:opacity-60"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+              <span>{saving ? 'Saving...' : 'Save Preferences'}</span>
             </button>
           </div>
         </form>

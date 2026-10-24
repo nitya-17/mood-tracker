@@ -25,34 +25,34 @@ export default function MoodQuote({ moodLevel }) {
   if (!quote) return null;
 
   return (
-    <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-200/60 rounded-2xl p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-amber-500 text-white shadow-sm shadow-amber-200 flex-shrink-0 mt-0.5">
-            <Quote className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold tracking-wider uppercase text-amber-800">
-              Daily Mood Reflection Quote
+    <div className="bg-[#FAF7F2] rounded-3xl p-6 shadow-soft border border-[#EAE2D7] flex flex-col justify-between h-full">
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Quote className="w-4 h-4 text-terracotta" />
+            <span className="text-[11px] font-bold tracking-wider uppercase text-espresso-500">
+              Daily Reflection Quote
             </span>
-            <p className="text-sm font-medium text-slate-800 mt-1 italic leading-relaxed">
-              "{quote.text}"
-            </p>
-            <p className="text-xs text-slate-500 mt-1 font-semibold">
-              — {quote.author || 'Unknown'}
-            </p>
           </div>
+
+          <button
+            onClick={() => fetchQuote(moodLevel)}
+            disabled={loading}
+            title="Refresh quote"
+            className="p-1.5 text-espresso-500 hover:text-espresso-800 hover:bg-white rounded-full transition-colors"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-terracotta' : ''}`} />
+          </button>
         </div>
 
-        <button
-          onClick={() => fetchQuote(moodLevel)}
-          disabled={loading}
-          title="Get another quote"
-          className="p-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition-colors flex-shrink-0"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <p className="font-display text-sm sm:text-base font-semibold text-espresso-800 italic leading-relaxed">
+          "{quote.text}"
+        </p>
       </div>
+
+      <p className="text-xs font-bold text-espresso-500 mt-4 text-right">
+        — {quote.author || 'Unknown'}
+      </p>
     </div>
   );
 }
