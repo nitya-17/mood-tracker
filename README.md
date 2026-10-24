@@ -68,6 +68,72 @@ weekly_summaries (id UUID, user_id, week_start DATE, avg_mood, avg_sleep, entry_
 
 ---
 
+## 🧮 Technical Analytics & SQL Queries
+
+For technical interviewers and code reviewers, here are the exact PostgreSQL analytical queries powering the UI insights:
+
+### 1. Streaks Detection (Gaps and Islands)
+Determines consecutive daily check-ins without breaks by taking the difference between the calendar date and a contiguous row number:
+```sql
+WITH groups AS (
+  SELECT entry_date,
+         entry_date - (ROW_NUMBER() OVER (ORDER BY entry_date))::int AS grp
+  FROM mood_entries
+  WHERE user_id = $1
+),
+streaks AS (
+  SELECT MIN(entry_date) AS streak_start,
+         MAX(entry_date) AS streak_end,
+         COUNT(*)::int   AS days
+  FROM groups
+  GROUP BY grp
+)
+SELECT streak_start, streak_end, days
+FROM streaks
+ORDER BY streak_end DESC;
+```
+
+### 2. Mood vs. Sleep Correlation (Pearson Coefficient)
+Evaluates statistical correlation between sleep hours and mood using PostgreSQL's native aggregate function:
+```sql
+SELECT ROUND(CORR(mood, sleep_hours)::numeric, 3) AS correlation,
+       COUNT(*)::int AS total_entries
+FROM mood_entries
+WHERE user_id = $1;
+```
+
+### 3. Day-of-Week Aggregation
+Calculates average mood scores across all days of the week:
+```sql
+SELECT EXTRACT(DOW FROM entry_date)::int AS dow,
+       ROUND(AVG(mood)::numeric, 2) AS avg_mood,
+       ROUND(AVG(sleep_hours)::numeric, 2) AS avg_sleep,
+       COUNT(*)::int AS total_entries
+FROM mood_entries
+WHERE user_id = $1
+GROUP BY dow
+ORDER BY dow ASC;
+```
+
+### 4. Past 5 vs. Previous 5 Check-ins (Window Function)
+Ranks user entries chronologically and segments them into the 5 most recent vs. the preceding 5:
+```sql
+WITH ranked AS (
+  SELECT mood, sleep_hours,
+         ROW_NUMBER() OVER (ORDER BY entry_date DESC) AS rn
+  FROM mood_entries
+  WHERE user_id = $1
+)
+SELECT
+  ROUND(AVG(mood)        FILTER (WHERE rn BETWEEN 1 AND 5)::numeric, 2)  AS mood_recent,
+  ROUND(AVG(mood)        FILTER (WHERE rn BETWEEN 6 AND 10)::numeric, 2) AS mood_previous,
+  ROUND(AVG(sleep_hours) FILTER (WHERE rn BETWEEN 1 AND 5)::numeric, 2)  AS sleep_recent,
+  ROUND(AVG(sleep_hours) FILTER (WHERE rn BETWEEN 6 AND 10)::numeric, 2) AS sleep_previous
+FROM ranked;
+```
+
+---
+
 ## 🚀 Local Setup & Installation
 
 ### 1. Configure Supabase Database
