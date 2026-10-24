@@ -2,10 +2,18 @@ import React, { useState } from 'react';
 import MoodFace, { MOOD_DEFINITIONS } from './MoodFace';
 import { Plus, ChevronLeft, ChevronRight, Moon } from 'lucide-react';
 
-export default function CalendarHeatmap({ entries, onLogClick, onSelectDay }) {
+export default function CalendarHeatmap({ entries, todayEntry, onLogClick, onSelectDay }) {
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const normalizeDateStr = (raw) => {
+    if (!raw) return '';
+    if (typeof raw === 'string') return raw.slice(0, 10);
+    if (raw instanceof Date) return raw.toISOString().slice(0, 10);
+    return String(raw).slice(0, 10);
+  };
+
   const [selectedDateStr, setSelectedDateStr] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().slice(0, 10)
   );
 
   const year = currentDate.getFullYear();
@@ -18,8 +26,17 @@ export default function CalendarHeatmap({ entries, onLogClick, onSelectDay }) {
   // Map entries by date YYYY-MM-DD
   const entryMap = new Map();
   (entries || []).forEach((e) => {
-    entryMap.set(e.entry_date, e);
+    const key = normalizeDateStr(e.entry_date);
+    if (key) entryMap.set(key, e);
   });
+
+  // Ensure today's entry is immediately present in the map
+  if (todayEntry && todayEntry.entry_date) {
+    const todayKey = normalizeDateStr(todayEntry.entry_date);
+    if (todayKey && !entryMap.has(todayKey)) {
+      entryMap.set(todayKey, todayEntry);
+    }
+  }
 
   // Calculate count of logged moods in this month
   let loggedThisMonth = 0;
@@ -44,7 +61,7 @@ export default function CalendarHeatmap({ entries, onLogClick, onSelectDay }) {
   const blanks = Array.from({ length: firstDayOfWeek });
   const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  const selectedEntry = entryMap.get(selectedDateStr);
+  const selectedEntry = entryMap.get(normalizeDateStr(selectedDateStr));
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-soft border border-[#EFEAE2]">

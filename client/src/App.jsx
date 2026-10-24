@@ -66,6 +66,11 @@ export default function App() {
 
   const handleEntryCreated = (newEntry) => {
     setTodayEntry(newEntry);
+    setRecentEntries((prev) => {
+      const dateKey = (newEntry.entry_date || '').slice(0, 10);
+      const filtered = prev.filter((e) => (e.entry_date || '').slice(0, 10) !== dateKey);
+      return [...filtered, newEntry];
+    });
     loadDashboardData();
   };
 
@@ -146,6 +151,7 @@ export default function App() {
         {/* 3. Monthly Calendar Grid with Gaps and Illustrated Faces (Matching Image 3) */}
         <CalendarHeatmap
           entries={recentEntries}
+          todayEntry={todayEntry}
           onLogClick={scrollToForm}
           onSelectDay={(entry) => {}}
         />

@@ -42,9 +42,10 @@ export default function MoodOverviewCard({ entries, comparison }) {
   const recent11 = (entries || []).slice(-11);
 
   const labels = recent11.map((e) => {
-    const parts = e.entry_date.split('-');
-    const d = new Date(parts[0], parts[1] - 1, parts[2]);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const raw = typeof e.entry_date === 'string' ? e.entry_date.slice(0, 10) : '';
+    const parts = raw.split('-');
+    const d = new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   });
 
   const lineChartData = {

@@ -5,6 +5,9 @@ dotenv.config();
 
 const { Pool } = pg;
 
+// Return DATE (OID 1082) as pure 'YYYY-MM-DD' strings without timezone offset shifting
+pg.types.setTypeParser(1082, (val) => val);
+
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString && process.env.NODE_ENV !== 'test') {
