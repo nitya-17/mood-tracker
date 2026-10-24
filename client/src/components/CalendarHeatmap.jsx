@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import MoodFace, { MOOD_DEFINITIONS } from './MoodFace';
-import { Plus, ChevronLeft, ChevronRight, Moon } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function CalendarHeatmap({ entries, todayEntry, onLogClick, onSelectDay }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -167,37 +167,6 @@ export default function CalendarHeatmap({ entries, todayEntry, onLogClick, onSel
           );
         })}
       </div>
-
-      {/* Selected Day Details Card */}
-      {selectedEntry ? (
-        <div className="mt-6 p-4 rounded-2xl bg-cream-100 border border-[#EAE2D7] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <MoodFace level={selectedEntry.mood} size={40} />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-espresso-800 text-sm">
-                  {MOOD_DEFINITIONS[selectedEntry.mood]?.phrase}
-                </span>
-                <span className="text-[11px] font-mono text-espresso-500">
-                  ({selectedEntry.entry_date})
-                </span>
-              </div>
-              <p className="text-xs text-espresso-600 italic mt-0.5 max-w-lg">
-                "{selectedEntry.reflection}"
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs font-semibold text-espresso-700 bg-white px-3 py-1.5 rounded-xl border border-[#EAE2D7] self-start sm:self-auto">
-            <Moon className="w-3.5 h-3.5 text-terracotta" />
-            <span>{selectedEntry.sleep_hours}h sleep</span>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-5 text-center text-xs text-espresso-500 italic py-2">
-          Click any date in the calendar to inspect that day's reflection and details.
-        </div>
-      )}
     </div>
   );
 }
