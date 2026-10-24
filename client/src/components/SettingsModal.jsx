@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
-import { X, User, Bell, Clock, Save, CheckCircle2 } from 'lucide-react';
+import { X, User, Bell, Clock, Save, CheckCircle2, Download, FileSpreadsheet, FileJson } from 'lucide-react';
 
 const PRESET_AVATARS = [
   'https://api.dicebear.com/7.x/bottts/svg?seed=Astra',
@@ -24,6 +24,10 @@ export default function SettingsModal({ isOpen, onClose }) {
 
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Export state
+  const [exporting, setExporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -48,6 +52,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     if (isOpen) {
       loadReminders();
       setSavedSuccess(false);
+      setExportFormat(null);
     }
   }, [user, isOpen]);
 
@@ -78,9 +83,22 @@ export default function SettingsModal({ isOpen, onClose }) {
     }
   };
 
+  const handleExport = async (format) => {
+    setExporting(true);
+    setExportFormat(format);
+    try {
+      await api.downloadExport(format);
+    } catch (err) {
+      console.error('Export error', err);
+    } finally {
+      setExporting(false);
+      setTimeout(() => setExportFormat(null), 3500);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso-900/40 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-xl border border-[#EAE2D7] relative animate-in fade-in zoom-in-95">
+      <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 shadow-xl border border-[#EAE2D7] relative animate-in fade-in zoom-in-95">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 text-espresso-500 hover:text-espresso-800 p-1 rounded-full hover:bg-cream-100 transition-colors"
@@ -89,10 +107,10 @@ export default function SettingsModal({ isOpen, onClose }) {
         </button>
 
         <h3 className="font-display text-2xl font-bold text-espresso-800 tracking-tight">
-          Account & Daily Reminders
+          Settings & Preferences
         </h3>
         <p className="text-xs text-espresso-500 mt-1">
-          Personalize your profile and daily notification schedule.
+          Manage your profile, daily reminders, and data export.
         </p>
 
         {savedSuccess && (
@@ -208,6 +226,48 @@ export default function SettingsModal({ isOpen, onClose }) {
                     <option value="push">Web Push</option>
                   </select>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Data Export Section inside Settings */}
+          <div className="pt-4 border-t border-[#F4EFE8]">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Download className="w-4 h-4 text-terracotta" />
+              <span className="text-xs font-bold text-espresso-800 uppercase tracking-wider">
+                Export Check-in Data
+              </span>
+            </div>
+            <p className="text-[11px] font-medium text-espresso-500 mb-3">
+              Download your complete archive of moods, sleep hours, feelings, and reflections.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleExport('csv')}
+                disabled={exporting}
+                className="py-2.5 px-3 rounded-2xl bg-cream-100 hover:bg-cream-200 border border-[#EAE2D7] text-espresso-800 text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-sage" />
+                <span>{exporting && exportFormat === 'csv' ? 'Exporting...' : 'Download CSV'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleExport('json')}
+                disabled={exporting}
+                className="py-2.5 px-3 rounded-2xl bg-cream-100 hover:bg-cream-200 border border-[#EAE2D7] text-espresso-800 text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                <FileJson className="w-4 h-4 text-terracotta" />
+                <span>{exporting && exportFormat === 'json' ? 'Exporting...' : 'Download JSON'}</span>
+              </button>
+            </div>
+
+            {exportFormat && !exporting && (
+              <div className="mt-2.5 p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Exported {exportFormat.toUpperCase()} archive successfully!</span>
               </div>
             )}
           </div>

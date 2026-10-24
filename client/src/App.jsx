@@ -107,7 +107,7 @@ export default function App() {
       {/* Navbar */}
       <Navbar
         onOpenSettings={() => setSettingsOpen(true)}
-        onOpenExport={() => setExportOpen(true)}
+        onScrollToForm={scrollToForm}
         todayLogged={!!todayEntry}
       />
 
@@ -181,9 +181,8 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Modals */}
+      {/* Settings Modal (Includes Reminders & Data Export) */}
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <ExportModal isOpen={exportOpen} onClose={() => setExportOpen(false)} />
     </div>
   );
 }

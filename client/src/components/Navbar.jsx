@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import MoodFace from './MoodFace';
-import { Settings, Download, LogOut, CheckCircle2 } from 'lucide-react';
+import { Settings, LogOut } from 'lucide-react';
 
-export default function Navbar({ onOpenSettings, onOpenExport, todayLogged }) {
+export default function Navbar({ onOpenSettings, onScrollToForm, todayLogged }) {
   const { user, logout } = useAuth();
 
   return (
@@ -25,39 +25,34 @@ export default function Navbar({ onOpenSettings, onOpenExport, todayLogged }) {
         {/* User / Actions */}
         {user ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Today status badge */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white border border-[#EAE2D7]">
-              {todayLogged ? (
-                <span className="flex items-center gap-1.5 text-sage text-[11px] font-bold">
-                  <span className="w-2 h-2 rounded-full bg-sage animate-pulse"></span>
-                  Today Logged
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 text-terracotta text-[11px] font-bold">
-                  <span className="w-2 h-2 rounded-full bg-terracotta"></span>
-                  Check-in Awaiting
-                </span>
-              )}
-            </div>
-
-            {/* Export data button */}
+            {/* Today status button: Green when logged, Red when not logged */}
             <button
-              onClick={onOpenExport}
-              title="Export Check-in Data"
-              className="p-2 text-espresso-700 hover:text-espresso-900 hover:bg-white rounded-full transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              onClick={todayLogged ? undefined : onScrollToForm}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs ${
+                todayLogged
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 cursor-default'
+                  : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer animate-pulse'
+              }`}
+              title={todayLogged ? "Today's check-in recorded" : "Click to log today's mood"}
             >
-              <Download className="w-4 h-4 text-terracotta" />
-              <span className="hidden md:inline">Export</span>
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  todayLogged
+                    ? 'bg-emerald-500 shadow-sm shadow-emerald-300'
+                    : 'bg-rose-500 shadow-sm shadow-rose-300'
+                }`}
+              />
+              <span>{todayLogged ? 'Today Logged' : 'Not Logged'}</span>
             </button>
 
             {/* Settings button */}
             <button
               onClick={onOpenSettings}
-              title="Settings & Reminders"
-              className="p-2 text-espresso-700 hover:text-espresso-900 hover:bg-white rounded-full transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              title="Settings & Export"
+              className="px-3 py-1.5 text-espresso-700 hover:text-espresso-900 bg-white hover:bg-cream-100 border border-[#EAE2D7] rounded-full transition-colors flex items-center gap-1.5 text-xs font-bold shadow-xs"
             >
-              <Settings className="w-4 h-4 text-terracotta" />
-              <span className="hidden md:inline">Settings</span>
+              <Settings className="w-3.5 h-3.5 text-terracotta" />
+              <span>Settings</span>
             </button>
 
             {/* User profile avatar & logout */}
